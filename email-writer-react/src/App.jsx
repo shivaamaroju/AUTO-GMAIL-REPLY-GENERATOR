@@ -17,7 +17,7 @@ function App() {
 
     try {
 // Replace 48.214.246.76 with your BACKEND's External IP
-const response = await axios.post('http://<BACKEND_EXTERNAL_IP>:8081/api/email/generate', {
+const response = await axios.post('http://172.168.77.220:8081/api/email/generate', {
     emailContent,
     tone,
 });
