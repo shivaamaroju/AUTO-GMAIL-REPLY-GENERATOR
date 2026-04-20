@@ -20,10 +20,10 @@ public class EmailGeneratorService {
 
     private final WebClient webClient;
 
-    @Value("${GEMINI_API_URL}")
+    @Value("${gemini.api.url}")
     private String geminiApiUrl;
 
-    @Value("${GEMINI_API_KEY}")
+    @Value("${gemini.api.key}")
     private String geminiApiKey;
 
     public EmailGeneratorService(WebClient webClient) {
