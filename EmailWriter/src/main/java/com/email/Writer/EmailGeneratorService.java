@@ -41,11 +41,10 @@ public class EmailGeneratorService {
                 }
         );
 
-        // Build the URI using UriComponentsBuilder.
-       String uri = UriComponentsBuilder.fromUriString(geminiApiUrl)
-                .queryParam("key", geminiApiKey)
-                .build()
-                .toUriString();
+String uri = UriComponentsBuilder.fromHttpUrl(geminiApiUrl)
+        .queryParam("key", geminiApiKey)
+        .build()
+        .toUriString();
 
         logger.info("Sending request to: {}", uri);  // Log the full URI
 
