@@ -36,11 +36,11 @@ pipeline {
         }
         stage('Deploy to AKS') {
             steps {
-                // Fetch the secret file we uploaded to Jenkins credentials
-                withCredentials([file(credentialsId: 'aks-kubeconfig-file', variable: 'KUBECONFIG')]) {
-                    sh "kubectl apply -f k8s/deployment.yaml --kubeconfig=${KUBECONFIG}"
-                    sh "kubectl apply -f k8s/service.yaml --kubeconfig=${KUBECONFIG}"
-                    sh "kubectl rollout restart deployment backend-deploy --kubeconfig=${KUBECONFIG}"
+                withCredentials([file(credentialsId: 'aks-kubeconfig-file', variable: 'KUBECONFIG_PATH')]) {
+                    sh 'kubectl apply -f k8s/deployment.yaml --kubeconfig=$KUBECONFIG_PATH'
+                    sh 'kubectl apply -f k8s/service.yaml --kubeconfig=$KUBECONFIG_PATH'
+                    sh 'kubectl rollout restart deployment backend-deploy --kubeconfig=$KUBECONFIG_PATH'
+                    sh 'kubectl rollout restart deployment frontend-deploy --kubeconfig=$KUBECONFIG_PATH'
                 }
             }
         }
