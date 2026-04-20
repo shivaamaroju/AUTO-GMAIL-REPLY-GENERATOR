@@ -1,16 +1,17 @@
-# BACKEND SERVICE (Internal or External)
+# BACKEND SERVICE (Updated to External)
 apiVersion: v1
 kind: Service
 metadata:
   name: backend-service
 spec:
-  type: ClusterIP
+  type: LoadBalancer # Change from ClusterIP to LoadBalancer
   ports:
   - port: 8081
+    targetPort: 8081
   selector:
     app: backend
 ---
-# FRONTEND SERVICE (Public Access)
+# FRONTEND SERVICE (No changes needed)
 apiVersion: v1
 kind: Service
 metadata:
