@@ -37,10 +37,11 @@ pipeline {
         stage('Deploy to AKS') {
             steps {
                 withCredentials([file(credentialsId: 'aks-kubeconfig-file', variable: 'KUBECONFIG_PATH')]) {
-                    sh 'kubectl apply -f k8s/deployment.yaml --kubeconfig=$KUBECONFIG_PATH'
-                    sh 'kubectl apply -f k8s/service.yaml --kubeconfig=$KUBECONFIG_PATH'
-                    sh 'kubectl rollout restart deployment backend-deploy --kubeconfig=$KUBECONFIG_PATH'
-                    sh 'kubectl rollout restart deployment frontend-deploy --kubeconfig=$KUBECONFIG_PATH'
+                    // Wrapping the variable in "$..." handles the (1).txt filename correctly
+                    sh 'kubectl apply -f k8s/deployment.yaml --kubeconfig="$KUBECONFIG_PATH"'
+                    sh 'kubectl apply -f k8s/service.yaml --kubeconfig="$KUBECONFIG_PATH"'
+                    sh 'kubectl rollout restart deployment backend-deploy --kubeconfig="$KUBECONFIG_PATH"'
+                    sh 'kubectl rollout restart deployment frontend-deploy --kubeconfig="$KUBECONFIG_PATH"'
                 }
             }
         }
