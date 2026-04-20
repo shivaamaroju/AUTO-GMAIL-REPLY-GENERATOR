@@ -16,10 +16,10 @@ function App() {
     setGeneratedReply('');
 
     try {
-      const response = await axios.post('http://localhost:8081/api/email/generate', {
-        emailContent,
-        tone,
-      });
+const response = await axios.post('http://48.214.246.76:8081/api/email/generate', {
+    emailContent,
+    tone,
+});
       setGeneratedReply(typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2));
 
     } catch (error) {
