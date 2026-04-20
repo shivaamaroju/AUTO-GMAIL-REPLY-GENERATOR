@@ -1,19 +1,19 @@
 pipeline {
     agent any
     environment {
-        DOCKER_USER = "shivaamaroju" // Your Docker Hub username
+        DOCKER_USER = "shivaamaroju" 
         BACKEND_IMG = "${DOCKER_USER}/email-backend"
         FRONTEND_IMG = "${DOCKER_USER}/email-frontend"
     }
     stages {
         stage('Docker Login') {
             steps {
-                // This securely logs Jenkins into your Docker Hub account
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-token', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
                     sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                 }
             }
         }
+        
         stage('Build & Push Backend') {
             steps {
                 dir('EmailWriter') {
@@ -24,6 +24,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Build & Push Frontend') {
             steps {
                 dir('email-writer-react') {
@@ -34,16 +35,32 @@ pipeline {
                 }
             }
         }
+        
         stage('Deploy to AKS') {
             steps {
                 withCredentials([file(credentialsId: 'aks-kubeconfig-file', variable: 'KUBECONFIG_PATH')]) {
-                    // Wrapping the variable in "$..." handles the (1).txt filename correctly
+                    // Using single quotes '...' for the shell command prevents Groovy from messing up the filename path
                     sh 'kubectl apply -f k8s/deployment.yaml --kubeconfig="$KUBECONFIG_PATH"'
                     sh 'kubectl apply -f k8s/service.yaml --kubeconfig="$KUBECONFIG_PATH"'
+                    
+                    // Forces Kubernetes to pull the new 'latest' images we just pushed
                     sh 'kubectl rollout restart deployment backend-deploy --kubeconfig="$KUBECONFIG_PATH"'
                     sh 'kubectl rollout restart deployment frontend-deploy --kubeconfig="$KUBECONFIG_PATH"'
                 }
             }
+        }
+    }
+    
+    post {
+        success {
+            echo "Successfully deployed to AKS!"
+            withCredentials([file(credentialsId: 'aks-kubeconfig-file', variable: 'KUBECONFIG_PATH')]) {
+                echo "Fetching your Website URL..."
+                sh 'kubectl get svc frontend-service --kubeconfig="$KUBECONFIG_PATH"'
+            }
+        }
+        failure {
+            echo "Deployment failed. Please check the logs above."
         }
     }
 }
