@@ -13,9 +13,16 @@ spec:
       labels:
         app: backend
     spec:
+      # This tells AKS to use your Docker Hub "key"
+      imagePullSecrets:
+        - name: dockerhub-auth
       containers:
       - name: backend-container
-        image: youracrname.azurecr.io/email-backend:latest
+        # UPDATED: Points to your Docker Hub repo
+        image: shivaamaroju/email-backend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
         env:
           - name: GEMINI_API_KEY
             valueFrom:
@@ -38,6 +45,12 @@ spec:
       labels:
         app: frontend
     spec:
+      imagePullSecrets:
+        - name: dockerhub-auth
       containers:
       - name: frontend-container
-        image: youracrname.azurecr.io/email-frontend:latest
+        # UPDATED: Points to your Docker Hub repo
+        image: shivaamaroju/email-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
