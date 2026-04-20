@@ -52,13 +52,22 @@ pipeline {
     }
     
     post {
-        success {
+       success {
             echo "Successfully deployed to AKS!"
             withCredentials([file(credentialsId: 'aks-kubeconfig-file', variable: 'KUBECONFIG_PATH')]) {
-                echo "Fetching your Website URL..."
-                sh 'kubectl get svc frontend-service --kubeconfig="$KUBECONFIG_PATH"'
-            }
-        }
+                echo "---------- SERVICE ADDRESSES ----------"
+                
+                // Fetch Frontend IP
+                echo "FRONTEND URL:"
+                sh 'kubectl get svc frontend-service --kubeconfig="$KUBECONFIG_PATH" -o jsonpath="{.status.loadBalancer.ingress[0].ip}"'
+                echo ""
+
+                // Fetch Backend IP (Newly Added)
+                echo "BACKEND API URL (Port 8081):"
+                sh 'kubectl get svc backend-service --kubeconfig="$KUBECONFIG_PATH" -o jsonpath="{.status.loadBalancer.ingress[0].ip}"'
+                
+                echo "---------------------------------------"
+            }}
         failure {
             echo "Deployment failed. Please check the logs above."
         }
