@@ -42,7 +42,7 @@ public class EmailGeneratorService {
         );
 
         // Build the URI using UriComponentsBuilder.
-        String uri = UriComponentsBuilder.fromUriString(geminiApiUrl)
+       String uri = UriComponentsBuilder.fromUriString(geminiApiUrl)
                 .queryParam("key", geminiApiKey)
                 .build()
                 .toUriString();
