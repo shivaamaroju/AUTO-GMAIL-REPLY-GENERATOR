@@ -6,6 +6,13 @@ pipeline {
         FRONTEND_IMG = "${DOCKER_USER}/food-frontend"
     }
     stages {
+
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/shivaamaroju/Food-Delivery.git'
+            }
+        }
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-token', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
