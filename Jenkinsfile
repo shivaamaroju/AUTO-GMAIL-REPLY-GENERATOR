@@ -2,8 +2,8 @@ pipeline {
     agent any
     environment {
         DOCKER_USER = "shivaamaroju" 
-        BACKEND_IMG = "${DOCKER_USER}/email-backend"
-        FRONTEND_IMG = "${DOCKER_USER}/email-frontend"
+        BACKEND_IMG = "${DOCKER_USER}/food-backend"
+        FRONTEND_IMG = "${DOCKER_USER}/food-frontend"
     }
     stages {
         stage('Docker Login') {
@@ -16,22 +16,22 @@ pipeline {
         
         stage('Build & Push Backend') {
             steps {
-                dir('EmailWriter') {
+                dir('backend') { // Updated folder name
                     sh "docker build -t ${BACKEND_IMG}:${BUILD_NUMBER} ."
-                    sh "docker push ${BACKEND_IMG}:${BUILD_NUMBER}"
                     sh "docker tag ${BACKEND_IMG}:${BUILD_NUMBER} ${BACKEND_IMG}:latest"
                     sh "docker push ${BACKEND_IMG}:latest"
+                    sh "docker push ${BACKEND_IMG}:${BUILD_NUMBER}"
                 }
             }
         }
         
         stage('Build & Push Frontend') {
             steps {
-                dir('email-writer-react') {
+                dir('frontend') { // Updated folder name
                     sh "docker build -t ${FRONTEND_IMG}:${BUILD_NUMBER} ."
-                    sh "docker push ${FRONTEND_IMG}:${BUILD_NUMBER}"
                     sh "docker tag ${FRONTEND_IMG}:${BUILD_NUMBER} ${FRONTEND_IMG}:latest"
                     sh "docker push ${FRONTEND_IMG}:latest"
+                    sh "docker push ${FRONTEND_IMG}:${BUILD_NUMBER}"
                 }
             }
         }
@@ -39,37 +39,23 @@ pipeline {
         stage('Deploy to AKS') {
             steps {
                 withCredentials([file(credentialsId: 'aks-kubeconfig-file', variable: 'KUBECONFIG_PATH')]) {
-                    // Using single quotes '...' for the shell command prevents Groovy from messing up the filename path
-                    sh 'kubectl apply -f k8s/deployment.yaml --kubeconfig="$KUBECONFIG_PATH"'
-                    sh 'kubectl apply -f k8s/service.yaml --kubeconfig="$KUBECONFIG_PATH"'
+                    // Apply all manifests in the k8s folder
+                    sh 'kubectl apply -f k8s/ --kubeconfig="$KUBECONFIG_PATH"'
                     
-                    // Forces Kubernetes to pull the new 'latest' images we just pushed
-                    sh 'kubectl rollout restart deployment backend-deploy --kubeconfig="$KUBECONFIG_PATH"'
-                    sh 'kubectl rollout restart deployment frontend-deploy --kubeconfig="$KUBECONFIG_PATH"'
+                    // Restart to pull the new 'latest' images
+                    sh 'kubectl rollout restart deployment backend --kubeconfig="$KUBECONFIG_PATH"'
+                    sh 'kubectl rollout restart deployment frontend --kubeconfig="$KUBECONFIG_PATH"'
                 }
             }
         }
     }
     
     post {
-       success {
+        success {
             echo "Successfully deployed to AKS!"
-            withCredentials([file(credentialsId: 'aks-kubeconfig-file', variable: 'KUBECONFIG_PATH')]) {
-                echo "---------- SERVICE ADDRESSES ----------"
-                
-                // Fetch Frontend IP
-                echo "FRONTEND URL:"
-                sh 'kubectl get svc frontend-service --kubeconfig="$KUBECONFIG_PATH" -o jsonpath="{.status.loadBalancer.ingress[0].ip}"'
-                echo ""
-
-                // Fetch Backend IP (Newly Added)
-                echo "BACKEND API URL (Port 8081):"
-                sh 'kubectl get svc backend-service --kubeconfig="$KUBECONFIG_PATH" -o jsonpath="{.status.loadBalancer.ingress[0].ip}"'
-                
-                echo "---------------------------------------"
-            }}
+        }
         failure {
-            echo "Deployment failed. Please check the logs above."
+            echo "Deployment failed. Check Jenkins logs."
         }
     }
 }
