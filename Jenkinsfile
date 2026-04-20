@@ -9,7 +9,7 @@ pipeline {
         stage('Docker Login') {
             steps {
                 // This securely logs Jenkins into your Docker Hub account
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-tokenx', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-token', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
                     sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                 }
             }
